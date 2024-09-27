@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nodeserver
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nodeserver
+  template:
+    metadata:
+      labels:
+        app: nodeserver
+    spec: # specify all pods has
+      containers:
+      - name: nodeserver
+        image: "gilsonrusso/simple-api-node:v6.3"
+        startupProbe:
+          httpGet:
+            path: /helthz
+            port: 5000
+          periodSeconds: 3
+          failureThreshold: 10
+        readinessProbe:
+          httpGet:
+            path: /helthz
+            port: 5000
+          periodSeconds: 3
+          failureThreshold: 3
+          # initialDelaySeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /helthz
+            port: 5000
+          periodSeconds: 5
+          failureThreshold: 3
+          timeoutSeconds: 1
+          successThreshold: 1
+          # initialDelaySeconds: 10
+        envFrom:
+          - configMapRef: 
+              name: configmap-members
+          - secretRef:
+              name: nodeserver-secret
+        volumeMounts:
+          - mountPath: /usr/src/app/config
+            name: config-vol
+            readOnly: true
+          - mountPath: /usr/src/app/pvc
+            name: nodeserver-volume
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      volumes:
+        - name: nodeserver-volume
+          persistentVolumeClaim:
+            claimName: nodeserver-pvc
+        - name: config-vol # Volume usado para o configMap
+          configMap:
+            name: configmap-members
+            items:
+              - key: members
+                path: "members.txt"
+
+ 

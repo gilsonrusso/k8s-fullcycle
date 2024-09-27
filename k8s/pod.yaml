@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nodeserver
+  labels:
+    name: nodeserver
+spec:
+  containers:
+  - name: nodeserver
+    image: "gilsonrusso/simple-api-node:latest"
+    resources:
+      limits:
+        memory: "128Mi"
+        cpu: "500m"
+    ports:
+      - containerPort: 5000
+
+
